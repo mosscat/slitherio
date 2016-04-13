@@ -165,7 +165,7 @@ var mpd;
         if (!viewMap)
             return;
 
-        let h = [];
+        var h = [];
         for( var i = -1; i <= mapSize; ++i)
         {
             var str = "| ";
