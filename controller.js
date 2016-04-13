@@ -112,7 +112,7 @@ var mpd;
                         var wat = snk.nk.charAt(0);
                         if( !wat)
                             wat = 'S';
-                        if( str === snake)
+                        if( snk === snake)
                             wat = '0';
 
                         snk.pts.forEach(function(item, i, arr) {
