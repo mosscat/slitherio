@@ -114,7 +114,7 @@ var mpd;
                         mpd.style.position = "fixed",
                         mpd.style.right = "10px",
                         mpd.style.bottom = "30px",
-                        mpd.style.width = "690px",
+                        mpd.style.width = "750px",
                         mpd.style.height = "690x",
                         mpd.style.background = "rgba(0, 0, 0, .8)",
                         mpd.style.color = "#80FF80",
