@@ -32,24 +32,39 @@ var map = null;
 //   ym - y movement relative coord
 //   setAcceleration(1 or 0) - set acceleration to 1 or to 0
 var choosed = 0;
+var running = 0;
 
 function __updatePlayer()
 {
-    if( !choosed)
+    // look for nearby enemy and run away
+    for( var y = 30; y > 20; --y)
+        for( var x = 20; x < 30; ++x)
+            if( map[y][x] && (map[y][x].type == 's'))
+            {
+                running = 10;
+
+                xm = -(x - 25)*10;
+                ym = -(y - 25)*10;
+
+                break;
+            }
+
+    if( !running && !choosed)
     {
         // looking for food nearby
-        for( var y = 40; y > 20; --y)
-            for( var x = 20; x < 40; ++x)
+        for( var y = 30; y > 20; --y)
+            for( var x = 20; x < 30; ++x)
                 if( map[y][x] && (map[y][x].type == '*' || map[y][x].type == '$'))
                 {
                     // got it
-                    setAcceleration(1);
+                    //if( Math.random() > 0.9)
+                    //    setAcceleration(1);
                     choosed = map[y][x].id;
 
                     break;
                 }
     }
-    else
+    else if( !running)
     {
         for( var y = 35; y > 15; --y)
             for( var x = 15; x < 35; ++x)
@@ -58,13 +73,15 @@ function __updatePlayer()
                     // set destination
                     // 25 - is center of map[50x50]
                     // 5 is simply multiplier, less - faster rotation
-                    xm = (x - 25)*5;
-                    ym = (y - 25)*5;
+                    xm = (x - 25)*10;
+                    ym = (y - 25)*10;
 
                     break;
                 }
 
     }
+    else
+        running = running - 1;
 
     setTimeout(__updatePlayer, 50);
 }
