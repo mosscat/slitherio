@@ -6,6 +6,7 @@
 // @author       pinky
 // @match        http://slither.io/*
 // @run-at       document-idle
+// @require      http://code.jquery.com/jquery-latest.min.js
 // @grant        none
 // ==/UserScript==
 
