@@ -9,12 +9,10 @@
 // @grant        none
 // ==/UserScript==
 
-/*jshint esnext: true */
-
 // show original debug window
-const debugMode = false;
+var debugMode = false;
 // show map
-const viewMap = false;
+var viewMap = false;
 // map itself
 var map = null;
 
@@ -85,7 +83,7 @@ var mpd;
 
 (function(w)
 {
-    const mapSize = 50;
+    var mapSize = 50;
     var viewsEnabled = false;
 
     function init()
