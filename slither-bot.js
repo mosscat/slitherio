@@ -96,7 +96,7 @@ function __onEat()
     xm = ym = 0;
 }
 
-/// game controller
+/// controller
 var mpd;
 
 (function(w)
@@ -210,10 +210,31 @@ var mpd;
         if( px < 0 || px > mapSize || py < 0 || py > mapSize)
             return;
 
+        if( wat.type == '*') // food
+        {
+            var tmp = map[py | 0][px | 0];
+            if( tmp && tmp.type != '*')
+                return;
+
+            if( !tmp)
+            {
+                tmp = map[py | 0][px | 0] = {};
+                tmp.id = 0;
+                tmp.type = '*';
+                tmp.size = 0;
+                tmp.array = [];
+            }
+
+            tmp.id = tmp.id ^ wat.id;
+            tmp.size += wat.sz;
+            tmp.array.push(wat);
+
+            return;
+        }
+
         map[py | 0][px | 0] = wat;
     }
 
-    // some changes to original script
     w.addEventListener('load', function() {
 
         w.connect_old = w.connect;
@@ -235,7 +256,7 @@ var mpd;
                     for( var i = 0; i < mapSize; ++i)
                         map[i] = new Array( mapSize);
 
-                    // console.log(snakes);
+                    //console.log(snakes);
                     snakes.forEach(function(snk, j, _a) {
                         snk.type = (snk === snake ? 'O' : 's');
                         snk.pts.forEach(function(item, i, arr) {
@@ -243,15 +264,15 @@ var mpd;
                                 setPoint( snake.xx, snake.yy, item.xx, item.yy, snk);
                         });
                     });
-                    // console.log(foods);
+                    //console.log(foods);
                     foods.forEach(function(fds, j, _a) {
-                        if( fds)
+                        if( fds && !fds.eaten)
                         {
                             fds.type = '*';
                             setPoint( snake.xx, snake.yy, fds.xx, fds.yy, fds);
                         }
                     });
-                    // console.log(preys);
+                    //console.log(preys);
                     preys.forEach(function(fds, j, _a) {
                         if( fds)
                         {
@@ -262,7 +283,12 @@ var mpd;
                 }
                 else if(playing && (f == "c" || f == "y"))
                 {
-                    __onEat();
+                    var id = arr[3] << 16 | arr[4] << 8 | arr[5];
+                    foods.forEach(function(fds, j, _a) {
+                        if( fds && fds.eaten_by === snake){
+                            // console.log(fds.gr + ", " + fds.sz);
+                            __onEat();}
+                    });
                 }
             };
         };
