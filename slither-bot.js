@@ -86,7 +86,6 @@ function __updatePlayer()
     setTimeout(__updatePlayer, 50);
 }
 
-// TODO: now it calls if anybody eats something
 function __onEat()
 {
     setAcceleration(0);
