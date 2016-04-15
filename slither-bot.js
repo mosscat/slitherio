@@ -6,7 +6,7 @@
 // @author       pinky
 // @match        http://slither.io/*
 // @run-at       document-idle
-// @require      http://code.jquery.com/jquery-latest.min.js
+// @require      http://code.jquery.com/jquery-latest.js
 // @grant        none
 // ==/UserScript==
 
@@ -32,55 +32,91 @@ var map = null;
 //   ym - y movement relative coord
 //   setAcceleration(1 or 0) - set acceleration to 1 or to 0
 var choosed = 0;
+var curSize = 0;
+var prey = 0;
+
 var running = 0;
+
+function setChoosed(x, y)
+{
+    if( !playing)
+        return false;
+
+    var _y = 25 - y;
+    var _x = 25 + x;
+    if( !x || !y || !map[_y][_x])
+        return false;
+
+    if( running && (map[_y][_x].type != 's' || x < -7 || x > 7 || y < -7 || y > 7))
+        return false;
+
+    if(map[_y][_x].type == 's' && (x > -7 && x < 7 && y > -7 && y < 7))
+    {
+        running = 13;
+
+        // xm = (map[_y][_x].xx - snake.xx)*40;
+        // ym = (map[_y][_x].yy - snake.yy)*40;
+        xm = -x*150;
+        ym = y*150;
+
+        setAcceleration(0);
+
+        return true;
+    }
+
+    if(map[ _y][ _x].type == '$' && ((x > -5 && x < 5 && y > -5 && y < 5) || prey))
+    {
+        prey = 1;
+
+        xm = x * 40;
+        ym = -y * 40;
+
+        setAcceleration(1);
+
+        return true;
+    }
+
+    if(!prey && map[ _y][ _x].type == '*' && (map[ _y][ _x].size > curSize || map[ _y][_x].id == choosed) )
+    {
+        choosed = map[_y][_x].id;
+        curSize = map[_y][_x].size;
+
+        var obj = map[_y][_x].array[0];
+        if( obj)
+        {
+            xm = x * 40;
+            ym = -y * 40;
+            //xm = obj.xx - snake.xx;
+            //ym = obj.yy - snake.yy;
+
+            setAcceleration(curSize > 100);
+
+            return true;
+        }
+    }
+
+    return false;
+}
 
 function __updatePlayer()
 {
-    // look for nearby enemy and run away
-    for( var y = 30; y > 20; --y)
-        for( var x = 20; x < 30; ++x)
-            if( map[y][x] && (map[y][x].type == 's'))
+    var found = false;
+
+    for( var i = 0; i < 23; ++i)
+        for( var z = 0; z < i+1; ++z)
+            if( setChoosed( z, i) || setChoosed( z, -i) || setChoosed( -z, i) || setChoosed( -z, -i)
+               || setChoosed( i, z) || setChoosed( i, -z) || setChoosed( -i, z) || setChoosed( -i, -z))
             {
-                running = 10;
+                found = true;
 
-                xm = -(x - 25)*10;
-                ym = -(y - 25)*10;
-
-                break;
+                if( running)
+                    break;
             }
 
-    if( !running && !choosed)
-    {
-        // looking for food nearby
-        for( var y = 30; y > 20; --y)
-            for( var x = 20; x < 30; ++x)
-                if( map[y][x] && (map[y][x].type == '*' || map[y][x].type == '$'))
-                {
-                    // got it
-                    //if( Math.random() > 0.9)
-                    //    setAcceleration(1);
-                    choosed = map[y][x].id;
+    if( !found)
+        __onEat();
 
-                    break;
-                }
-    }
-    else if( !running)
-    {
-        for( var y = 35; y > 15; --y)
-            for( var x = 15; x < 35; ++x)
-                if( map[y][x] && (map[y][x].id == choosed))
-                {
-                    // set destination
-                    // 25 - is center of map[50x50]
-                    // 5 is simply multiplier, less - faster rotation
-                    xm = (x - 25)*10;
-                    ym = (y - 25)*10;
-
-                    break;
-                }
-
-    }
-    else
+    if( running)
         running = running - 1;
 
     setTimeout(__updatePlayer, 50);
@@ -88,11 +124,9 @@ function __updatePlayer()
 
 function __onEat()
 {
-    setAcceleration(0);
-    //console.log("onEat");
-
-    choosed = 0;
-    xm = ym = 0;
+    if( !running)
+        setAcceleration(0);
+    prey = choosed = curSize = 0;
 }
 
 /// controller
@@ -190,7 +224,21 @@ var mpd;
                 if (i < 0 || i == mapSize)
                     str += "==";
                 else
-                    str += (!map[i][j] ? '.' : map[i][j].type.toString()) + " ";
+                {
+                    var item = (!map[i][j] ? '.' : map[i][j].type.toString());
+                    switch( item)
+                    {
+                        case '*': item = '<font color="#0000FF">' + item + '</font>';
+                            break;
+                        case '$': item = '<font color="#FFFFFF">' + item + '</font>';
+                            break;
+                        case 'O': item = '<font color="#00DD00">' + item + '</font>';
+                            break;
+                        case 's': item = '<font color="#FF0000">' + item + '</font>';
+                            break;
+                    }
+                    str += item + " ";
+                }
             str += " |";
             h.push(str);
         }
@@ -206,7 +254,7 @@ var mpd;
         var px = (x - ox)/40 + c,
             py = (y - oy)/40 + c;
 
-        if( px < 0 || px > mapSize || py < 0 || py > mapSize)
+        if( px < 0 || px > mapSize || py < 0 || py > mapSize || (map[py | 0][px | 0] && map[py | 0][px | 0].type == 's'))
             return;
 
         if( wat.type == '*') // food
@@ -259,7 +307,7 @@ var mpd;
                     snakes.forEach(function(snk, j, _a) {
                         snk.type = (snk === snake ? 'O' : 's');
                         snk.pts.forEach(function(item, i, arr) {
-                            if( item.da < 0.05)
+                            if( item.da < 0.15 && snk !== snake)
                                 setPoint( snake.xx, snake.yy, item.xx, item.yy, snk);
                         });
                     });
